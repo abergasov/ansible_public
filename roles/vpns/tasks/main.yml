@@ -1,0 +1,120 @@
+---
+### OPENVPN
+- name: Download OpenVPN
+  ansible.builtin.shell:
+    cmd: wget https://git.io/vpn -O openvpn-install.sh
+
+- name: Install OpenVPN
+  expect:
+    command: bash openvpn-install.sh
+    timeout: 300
+    responses:
+      IPv4 address \[1\]: '1'
+      Protocol \[1\]: '1'
+      Port \[1194\]: '{{ ovpn_port }}'
+      DNS server \[1\]: '3'
+      Name \[client\]: 'init'
+      Press any key to continue...: 'a'
+    echo: yes
+  register: prompt
+
+- name: Print version
+  debug:
+    var: prompt.stdout_lines
+
+### WIREGUARD
+- name: Download WireGuard
+  ansible.builtin.shell:
+    cmd: wget https://git.io/wireguard -O wireguard-install.sh
+
+- name: Install WireGuard
+  expect:
+    command: bash wireguard-install.sh
+    timeout: 300
+    responses:
+      IPv4 address \[1\]: '1'
+      Port \[51820\]: '{{ wg_port }}'
+      Name \[client\]: 'init'
+      DNS server \[1\]: '3'
+      Press any key to continue...: 'a'
+    echo: yes
+  register: promptwg
+
+- name: Print version
+  debug:
+    var: promptwg.stdout_lines
+
+
+#- name: Ensure service is enabled
+#  command: service docker restart
+
+#- name: copy Docker Compose files
+#  copy:
+#    src: files/{{ item }}
+#    dest: /root/{{ item }}
+#  loop:
+#    - docker-compose-vpn.yml
+#
+## use files parameter to use multiple docker-compose.yml files
+#- name: Run `docker-compose up` again
+#  community.docker.docker_compose:
+#    project_src: /root
+##    build: true
+##    register: output
+#    files:
+#      - docker-compose-vpn.yml
+
+#- name: Pull docker image
+#  community.docker.docker_image:
+#    name: "kylemanna/openvpn"
+#    source: pull
+#
+#- name: Create volume path
+#  ansible.builtin.file:
+#    path: /root/vpn
+#    state: directory
+#
+#- name: Create openVPN volume
+#  community.docker.docker_volume:
+#      name: "openvpn-data"
+#      driver_options:
+#        device: /root/vpn
+#        type: ext4
+
+#- name: Generate openVPN config
+#  ansible.builtin.shell:
+#    #cmd: docker run -v openvpn-data:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u tcp://"{{ansible_host}}"
+#    cmd: docker run --mount type=bind,source=/root/vpn,target=/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u tcp://"{{ansible_host}}"
+#
+#- name: Init openVPN config
+#  expect:
+#    #command: docker run -v openvpn-data:/etc/openvpn --rm -it kylemanna/openvpn ovpn_initpki nopass
+#    command: docker run --mount type=bind,source=/root/vpn,target=/etc/openvpn --rm -it kylemanna/openvpn ovpn_initpki nopass
+#    timeout: 500
+#    responses:
+#      'Confirm removal: ' : 'yes'
+#      (?i)Common Name : '123'
+#      #'Common Name (eg: your user, host, or server name) [Easy-RSA CA]: ' : '123'
+#     # 'Enter pass phrase for /etc/openvpn/pki/private/ca.key: ' : '123'
+#      #'Enter pass phrase for /etc/openvpn/pki/private/ca.key: ' : '123'
+
+#- name: Generate openVPN config
+#  ansible.builtin.shell:
+#    #cmd: docker run -v openvpn-data:/etc/openvpn -dp {{ ovpn_port }}:1194/tcp --cap-add=NET_ADMIN kylemanna/openvpn
+#    cmd: docker run --privileged --mount type=bind,source=/root/vpn,target=/etc/openvpn -dp {{ ovpn_port }}:{{ ovpn_port }}/tcp --cap-add=NET_ADMIN kylemanna/openvpn
+
+#- name: Create openVPN container
+#  community.docker.docker_container:
+#    name: "docker_openvpn"
+#    image: "kylemanna/openvpn"
+#    restart: true
+#    ports: "{{ ovpn_port }}:1194"
+
+#- name: Create openVPN container
+#  docker_container:
+#    name: docker_openvpn
+#    image: kylemanna/openvpn
+#    state: started
+#    restart: yes
+#    ports:
+#      - "{{ ovpn_port }}:1194"

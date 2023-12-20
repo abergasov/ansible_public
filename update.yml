@@ -1,0 +1,11 @@
+---
+- hosts: "vpns"
+  user: admin
+  vars_files:
+    - secret
+    - vars/main.yml
+  vars:
+    ansible_become_pass: "{{ user_password }}"
+  become: true
+  roles:
+    - update_vpn

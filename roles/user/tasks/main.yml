@@ -1,0 +1,43 @@
+---
+- name: Ensure sudo group is present
+  group:
+    name: sudo
+    state: present
+
+- name: Update root user Password
+  user:
+    name: root
+    update_password: always
+    password: "{{ root_password | password_hash('sha512') }}"
+
+- name: Ensure sudo group has sudo privileges
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL:ALL) ALL"
+    validate: "/usr/sbin/visudo -cf %s"
+
+- name: Add new super user
+  ansible.builtin.user:
+    name: "{{ user }}"
+    password: "{{ user_password | password_hash('sha512') }}"
+    groups: sudo
+    append: yes
+    state: present
+    shell: /bin/bash
+    update_password: always
+
+- name: Add SSH key for new super user
+  authorized_key:
+    user: "{{ user }}"
+    key: "{{ lookup('file', item) }}"
+  with_items: "{{ public_key }}"
+
+
+- name: Install oh-my-zsh
+  ansible.builtin.include_role:
+    name: gantsign.oh-my-zsh
+  vars:
+    users:
+      - username:  "{{ user }}"

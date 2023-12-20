@@ -1,0 +1,6 @@
+.idea/*
+vault.txt
+ansible.log
+generate_vpn_conf/*
+!generate_vpn_conf/.gitkeep
+vars/main.yml

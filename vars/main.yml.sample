@@ -1,0 +1,11 @@
+---
+user: admin
+password: $6$kgABC./
+public_key: ~/.ssh/id_rsa.pub
+
+fqdn: host.example.com
+hostname: host
+timezone: "Europe/London"
+ssh_port: 12345
+
+enable_custom_shell: yes

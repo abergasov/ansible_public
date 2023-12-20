@@ -1,0 +1,35 @@
+---
+- name: Allow ssh traffic on custom port
+  ufw:
+    rule: allow
+    port: "{{ ansible_port }}"
+    proto: tcp
+
+- name: Allow http traffic on port 80
+  ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+
+- name: Allow https traffic on port 443
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Allow access to openVPN
+  ufw:
+    rule: allow
+    port: "{{ ovpn_port }}"
+    proto: udp
+
+- name: Allow access to wireguard
+  ufw:
+    rule: allow
+    port: "{{ wg_port }}"
+    proto: udp
+
+- name: Enable firewall
+  ufw:
+    state: enabled
+    policy: deny

@@ -1,0 +1,38 @@
+### set edKey
+- name: Clone a melt github repository
+  become: yes
+  become_user: admin
+  git:
+    repo: https://github.com/abergasov/melt
+    dest: /home/admin/go/src/melt
+    clone: yes
+    update: yes
+
+- name: Build melt
+  become: yes
+  become_user: admin
+  ansible.builtin.command: go build ./cmd/melt/
+  args:
+    chdir: /home/admin/go/src/melt
+
+- name: Create directory if they don't exist
+  become: yes
+  become_user: admin
+  file:
+    path: /home/admin/.ssh
+    state: directory
+
+- name: Generate key
+  become: yes
+  become_method: su
+  no_log: True
+  become_user: admin
+  args:
+    chdir: /home/admin/go/src/melt
+  expect:
+    command: ./melt restore /home/admin/.ssh/id_ed25519 --seed "{{ seed }}"
+    timeout: 30
+    responses:
+      (?i)Restoring key to: '' # Enter new passphrase
+      Enter same passphrase again: ''
+    echo: yes

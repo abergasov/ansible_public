@@ -1,0 +1,58 @@
+---
+- name: Update all packages
+  apt:
+    update_cache: yes
+    upgrade: safe
+    autoremove: yes
+
+- name: Install essential packages
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 3600
+    state: latest
+  with_items:
+    - unattended-upgrades
+    - git
+    - ntp
+    - make
+    - curl
+    - wget
+    - zsh
+    - ufw
+    #- migrate
+    - mc
+    - fail2ban
+    - apt-transport-https
+    - ca-certificates
+    - software-properties-common
+    - python3-pip
+    - virtualenv
+    - gnupg
+    - python3-setuptools
+    - lsb-release
+    - nodejs
+    - npm
+    - yarn
+    - jq
+    - snapd
+
+- name: Install go
+  community.general.snap:
+    name: go
+    classic: yes
+    channel: 1.20/stable
+
+- name: Ensure ntp starts on a fresh reboot
+  service:
+    name: ntp
+    state: started
+    enabled: yes
+
+- name: Set the current timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: "{{ new_hostname }}"

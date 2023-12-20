@@ -1,0 +1,58 @@
+---
+
+### openVPN
+- name: Generate openVPN config
+  become: yes
+  become_method: sudo
+  expect:
+    command: bash openvpn-install.sh
+    timeout: 60
+    chdir: /root
+    responses:
+      Option: '1' # 1) Add a new client\
+      Name: '{{new_hostname}}_{{ client }}'
+    echo: yes
+  register: prompt
+
+- name: Check exist generated ovpn file
+  stat: path=/root/{{new_hostname}}_{{ client }}.ovpn
+  register: ovpn_stat
+
+- name: Move generated ovpn file
+  command: mv /root/{{new_hostname}}_{{ client }}.ovpn /home/admin/{{new_hostname}}_{{ client }}.ovpn
+  when: ovpn_stat.stat.exists
+
+### Wireguard
+- name: Generate wireguard config
+  become: yes
+  become_method: sudo
+  expect:
+    command: bash wireguard-install.sh
+    timeout: 60
+    chdir: /root
+    responses:
+      Option: '1' # 1) Add a new client\
+      Name: '{{new_hostname}}_{{ client }}'
+      DNS server \[1\]: '3'
+    echo: yes
+  register: prompt
+
+- name: Check exist generated wireguard file
+  stat: path=/root/{{new_hostname}}_{{ client }}.conf
+  register: wg_stat
+
+- name: Move generated wireguard file
+  command: mv /root/{{new_hostname}}_{{ client }}.conf /home/admin/{{new_hostname}}_{{ client }}.conf
+  when: wg_stat.stat.exists
+
+- name: Download ovpn
+  ansible.builtin.fetch:
+    src: /home/admin/{{new_hostname}}_{{ client }}.ovpn
+    dest: generate_vpn_conf/{{new_hostname}}_{{ client }}.ovpn
+    flat: yes
+
+- name: Download wg
+  ansible.builtin.fetch:
+    src: /home/admin/{{new_hostname}}_{{ client }}.conf
+    dest: generate_vpn_conf/{{new_hostname}}_{{ client }}.conf
+    flat: yes
